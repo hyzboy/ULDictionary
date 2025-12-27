@@ -7,6 +7,11 @@
 #include <QHBoxLayout>
 #include <QWidget>
 #include <QString>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QUrl>
+#include <QUrlQuery>
 #include <gumbo.h>
 
 // Helper function to search for text in Gumbo parse tree
@@ -72,14 +77,18 @@ int main(int argc, char* argv[]) {
         "<li>C++20 标准</li>"
         "<li>Qt6 图形界面</li>"
         "<li>Gumbo HTML 解析器集成</li>"
+        "<li>Cambridge Dictionary 在线查询</li>"
         "<li>跨平台支持 (Windows, Linux, macOS)</li>"
         "</ul>"
     );
     
     mainLayout->addWidget(resultDisplay);
     
+    // Create network manager
+    QNetworkAccessManager* networkManager = new QNetworkAccessManager(&mainWindow);
+    
     // Connect search button to lambda function
-    QObject::connect(searchButton, &QPushButton::clicked, [inputField, resultDisplay]() {
+    QObject::connect(searchButton, &QPushButton::clicked, [inputField, resultDisplay, networkManager]() {
         QString word = inputField->text().trimmed();
         
         if (word.isEmpty()) {
@@ -89,29 +98,61 @@ int main(int argc, char* argv[]) {
             return;
         }
         
-        // Display search results with rich text formatting
-        QString html = QString(
-            "<h2 style='color: #2c3e50;'>查询结果：%1</h2>"
-            "<hr>"
-            "<p><b style='color: #3498db;'>单词：</b><span style='font-size: 18px;'>%2</span></p>"
-            "<p><b style='color: #3498db;'>发音：</b>[示例发音]</p>"
-            "<p><b style='color: #3498db;'>词性：</b>n. / v. / adj.</p>"
-            "<hr>"
-            "<h3 style='color: #16a085;'>释义：</h3>"
-            "<ol>"
-            "<li><b>名词：</b>示例释义 1</li>"
-            "<li><b>动词：</b>示例释义 2</li>"
-            "<li><b>形容词：</b>示例释义 3</li>"
-            "</ol>"
-            "<hr>"
-            "<h3 style='color: #16a085;'>例句：</h3>"
-            "<p style='margin-left: 20px;'><i>\"This is an example sentence.\"</i></p>"
-            "<p style='margin-left: 20px; color: #7f8c8d;'>这是一个例句。</p>"
-            "<hr>"
-            "<p style='color: #95a5a6; font-size: 11px;'>提示：这是演示数据，实际使用时需要连接词典数据源。</p>"
-        ).arg(word).arg(word);
+        // Display loading message
+        resultDisplay->setHtml(
+            "<h2 style='color: #2c3e50;'>正在查询：" + word + "</h2>"
+            "<p style='color: #7f8c8d;'>正在从 Cambridge Dictionary 获取数据...</p>"
+        );
         
-        resultDisplay->setHtml(html);
+        // Construct Cambridge Dictionary URL
+        QString urlString = QString("https://dictionary.cambridge.org/dictionary/english-chinese-simplified/%1?q=Chinese").arg(word);
+        QUrl url(urlString);
+        
+        QNetworkRequest request(url);
+        request.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+        
+        // Send GET request
+        QNetworkReply* reply = networkManager->get(request);
+        
+        // Handle response
+        QObject::connect(reply, &QNetworkReply::finished, [reply, resultDisplay, word]() {
+            if (reply->error() == QNetworkReply::NoError) {
+                // Read response data
+                QByteArray responseData = reply->readAll();
+                QString htmlContent = QString::fromUtf8(responseData);
+                
+                // Parse HTML with Gumbo
+                GumboOutput* output = gumbo_parse(responseData.constData());
+                
+                if (output) {
+                    // Extract text content
+                    QStringList texts;
+                    searchForText(output->root, texts);
+                    
+                    // Clean up Gumbo parser
+                    gumbo_destroy_output(&kGumboDefaultOptions, output);
+                    
+                    // Display the full HTML content
+                    resultDisplay->setHtml(htmlContent);
+                } else {
+                    resultDisplay->setHtml(
+                        "<p style='color: #e74c3c;'><b>错误：</b>无法解析 HTML 内容。</p>"
+                    );
+                }
+            } else {
+                // Display error message
+                resultDisplay->setHtml(
+                    QString("<h2 style='color: #e74c3c;'>查询失败</h2>"
+                           "<p><b>错误：</b>%1</p>"
+                           "<p><b>单词：</b>%2</p>"
+                           "<p>请检查网络连接或稍后重试。</p>")
+                    .arg(reply->errorString())
+                    .arg(word)
+                );
+            }
+            
+            reply->deleteLater();
+        });
     });
     
     // Allow Enter key to trigger search
