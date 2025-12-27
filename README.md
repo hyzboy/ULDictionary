@@ -1,32 +1,53 @@
 # ULDictionary
 
-Cross-platform C++20 CMake project with Qt6 support for Windows, Linux, and macOS.
+Cross-platform C++20 CMake project with Qt6 and Gumbo HTML parser support for Windows, Linux, and macOS.
 
 ## Requirements
 
 - CMake 3.20 or higher
 - Qt6 (Core and Widgets modules)
+- Gumbo HTML parser library
 - C++20 compatible compiler:
   - Windows: Visual Studio 2019 16.11+ or MSVC 19.29+
   - Linux: GCC 10+ or Clang 13+
   - macOS: Xcode 13+ (Apple Clang 13+)
 
-## Installing Qt6
+## Installing Dependencies
 
-### Windows
+### Qt6
+
+#### Windows
 Download and install Qt6 from [Qt official website](https://www.qt.io/download) or use package managers:
 ```cmd
 choco install qt6
 ```
 
-### Linux (Ubuntu/Debian)
+#### Linux (Ubuntu/Debian)
 ```bash
-sudo apt-get install qt6-base-dev
+sudo apt-get install qt6-base-dev libgumbo-dev
 ```
 
-### macOS
+#### macOS
 ```bash
-brew install qt@6
+brew install qt@6 gumbo-parser
+```
+
+### Gumbo Parser
+
+#### Windows
+Download and build from [Google Gumbo Parser GitHub](https://github.com/google/gumbo-parser), or use vcpkg:
+```cmd
+vcpkg install gumbo
+```
+
+#### Linux (Ubuntu/Debian)
+```bash
+sudo apt-get install libgumbo-dev
+```
+
+#### macOS
+```bash
+brew install gumbo-parser
 ```
 
 ## Building
@@ -98,9 +119,9 @@ After building, the executable will be in:
 
 ```
 ULDictionary/
-├── CMakeLists.txt          # Main CMake configuration with Qt6
+├── CMakeLists.txt          # Main CMake configuration with Qt6 and Gumbo
 ├── src/                    # Source files
-│   └── main.cpp           # Main entry point (Qt6 GUI)
+│   └── main.cpp           # Main entry point (Qt6 GUI with Gumbo parser demo)
 ├── .gitignore             # Git ignore rules
 └── README.md              # This file
 ```
@@ -109,11 +130,13 @@ ULDictionary/
 
 - C++20 standard compliance
 - Qt6 integration (Core and Widgets)
+- Gumbo HTML5 parser integration for HTML parsing
 - Cross-platform support (Windows, Linux, macOS)
-- CMake-based build system
+- CMake-based build system with pkg-config support
 - Platform detection and conditional compilation
 - Modern C++ and Qt features enabled
 - GUI application with Qt Widgets
+- HTML parsing demonstration with Gumbo
 
 ## License
 

@@ -14,6 +14,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Find Qt6
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
+# Find Gumbo parser using pkg-config
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GUMBO REQUIRED gumbo)
+
 # Enable Qt MOC, UIC, and RCC
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -45,6 +49,12 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Core
     Qt6::Widgets
+    ${GUMBO_LIBRARIES}
+)
+
+# Include Gumbo headers
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${GUMBO_INCLUDE_DIRS}
 )
 
 # Platform-specific settings

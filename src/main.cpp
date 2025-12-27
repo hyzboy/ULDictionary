@@ -4,21 +4,40 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QString>
+#include <QTextEdit>
+#include <QPushButton>
+#include <gumbo.h>
+
+// Helper function to search for text in Gumbo parse tree
+void searchForText(GumboNode* node, QStringList& texts) {
+    if (node->type == GUMBO_NODE_TEXT) {
+        QString text = QString::fromUtf8(node->v.text.text).trimmed();
+        if (!text.isEmpty()) {
+            texts.append(text);
+        }
+        return;
+    } else if (node->type == GUMBO_NODE_ELEMENT || node->type == GUMBO_NODE_TEMPLATE) {
+        GumboVector* children = &node->v.element.children;
+        for (unsigned int i = 0; i < children->length; ++i) {
+            searchForText(static_cast<GumboNode*>(children->data[i]), texts);
+        }
+    }
+}
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
     
     // Create main window
     QMainWindow mainWindow;
-    mainWindow.setWindowTitle("ULDictionary - Qt6 C++20 Application");
-    mainWindow.resize(600, 400);
+    mainWindow.setWindowTitle("ULDictionary - Qt6 C++20 with Gumbo Parser");
+    mainWindow.resize(800, 600);
     
     // Create central widget
     QWidget* centralWidget = new QWidget(&mainWindow);
     QVBoxLayout* layout = new QVBoxLayout(centralWidget);
     
     // Add labels with information
-    QLabel* titleLabel = new QLabel("ULDictionary - Cross-platform Qt6 C++20 Application", centralWidget);
+    QLabel* titleLabel = new QLabel("ULDictionary - Qt6 C++20 with Gumbo HTML Parser", centralWidget);
     titleLabel->setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;");
     layout->addWidget(titleLabel);
     
@@ -46,14 +65,29 @@ int main(int argc, char* argv[]) {
     QLabel* qtVersionLabel = new QLabel(QString("Qt Version: %1").arg(QT_VERSION_STR), centralWidget);
     layout->addWidget(qtVersionLabel);
     
-    // Arguments
-    QLabel* argsLabel = new QLabel(QString("Arguments: %1").arg(argc), centralWidget);
-    layout->addWidget(argsLabel);
+    QLabel* gumboLabel = new QLabel("Gumbo HTML Parser: Integrated", centralWidget);
+    layout->addWidget(gumboLabel);
     
-    for (int i = 0; i < argc; ++i) {
-        QLabel* argLabel = new QLabel(QString("  [%1]: %2").arg(i).arg(argv[i]), centralWidget);
-        layout->addWidget(argLabel);
-    }
+    // Gumbo parser demo section
+    QLabel* demoLabel = new QLabel("Gumbo HTML Parser Demo:", centralWidget);
+    demoLabel->setStyleSheet("font-weight: bold; margin-top: 10px;");
+    layout->addWidget(demoLabel);
+    
+    // Demo: Parse a simple HTML string
+    const char* html = "<html><body><h1>Hello World</h1><p>This is a test paragraph.</p></body></html>";
+    GumboOutput* output = gumbo_parse(html);
+    
+    // Extract text from parsed HTML
+    QStringList extractedTexts;
+    searchForText(output->root, extractedTexts);
+    
+    QString parsedResult = "Parsed HTML text: " + extractedTexts.join(", ");
+    QLabel* resultLabel = new QLabel(parsedResult, centralWidget);
+    resultLabel->setWordWrap(true);
+    layout->addWidget(resultLabel);
+    
+    // Clean up Gumbo parser
+    gumbo_destroy_output(&kGumboDefaultOptions, output);
     
     layout->addStretch();
     
