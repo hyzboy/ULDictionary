@@ -100,16 +100,17 @@ int main(int argc, char* argv[]) {
         
         // Display loading message
         resultDisplay->setHtml(
-            "<h2 style='color: #2c3e50;'>正在查询：" + word + "</h2>"
+            "<h2 style='color: #2c3e50;'>正在查询：" + word.toHtmlEscaped() + "</h2>"
             "<p style='color: #7f8c8d;'>正在从 Cambridge Dictionary 获取数据...</p>"
         );
         
-        // Construct Cambridge Dictionary URL
-        QString urlString = QString("https://dictionary.cambridge.org/dictionary/english-chinese-simplified/%1?q=Chinese").arg(word);
+        // Construct Cambridge Dictionary URL with proper encoding
+        QString encodedWord = QString::fromUtf8(QUrl::toPercentEncoding(word));
+        QString urlString = QString("https://dictionary.cambridge.org/dictionary/english-chinese-simplified/%1?q=Chinese").arg(encodedWord);
         QUrl url(urlString);
         
         QNetworkRequest request(url);
-        request.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+        request.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
         
         // Send GET request
         QNetworkReply* reply = networkManager->get(request);
