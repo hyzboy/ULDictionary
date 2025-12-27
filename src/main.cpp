@@ -4,8 +4,6 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QString>
-#include <QTextEdit>
-#include <QPushButton>
 #include <gumbo.h>
 
 // Helper function to search for text in Gumbo parse tree
@@ -77,17 +75,23 @@ int main(int argc, char* argv[]) {
     const char* html = "<html><body><h1>Hello World</h1><p>This is a test paragraph.</p></body></html>";
     GumboOutput* output = gumbo_parse(html);
     
-    // Extract text from parsed HTML
-    QStringList extractedTexts;
-    searchForText(output->root, extractedTexts);
+    QString parsedResult;
+    if (output) {
+        // Extract text from parsed HTML
+        QStringList extractedTexts;
+        searchForText(output->root, extractedTexts);
+        
+        parsedResult = "Parsed HTML text: " + extractedTexts.join(", ");
+        
+        // Clean up Gumbo parser
+        gumbo_destroy_output(&kGumboDefaultOptions, output);
+    } else {
+        parsedResult = "Error: Failed to parse HTML";
+    }
     
-    QString parsedResult = "Parsed HTML text: " + extractedTexts.join(", ");
     QLabel* resultLabel = new QLabel(parsedResult, centralWidget);
     resultLabel->setWordWrap(true);
     layout->addWidget(resultLabel);
-    
-    // Clean up Gumbo parser
-    gumbo_destroy_output(&kGumboDefaultOptions, output);
     
     layout->addStretch();
     
