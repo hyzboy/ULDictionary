@@ -39,3 +39,35 @@
 
 # debug information files
 *.dwo
+
+# Build directories
+build/
+Build/
+cmake-build-*/
+out/
+
+# IDE files
+.vscode/
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+
+# Android
+.gradle/
+.cxx/
+local.properties
+
+# iOS/macOS
+*.xcodeproj
+*.xcworkspace
+DerivedData/
