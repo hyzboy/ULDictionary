@@ -138,6 +138,43 @@ ULDictionary/
 - GUI application with Qt Widgets
 - HTML parsing demonstration with Gumbo
 
+## CI/CD and Releases
+
+This project uses GitHub Actions for automated building and releasing.
+
+### Continuous Integration
+
+Every push to the repository triggers the CI workflow that:
+- Builds the application on Linux, Windows, and macOS
+- Verifies the executable is created successfully
+- Ensures cross-platform compatibility
+
+### Creating Releases
+
+To create a new release with pre-built executables:
+
+1. Create and push a version tag:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+2. GitHub Actions will automatically:
+   - Build the application for all three platforms
+   - Package the executables with dependencies
+   - Create a GitHub Release with downloadable binaries
+
+### Manual Build Trigger
+
+You can also manually trigger a build from the GitHub Actions tab without creating a release.
+
+### Download Pre-built Binaries
+
+Pre-built binaries are available in the [Releases](../../releases) section:
+- **Linux**: `ULDictionary-Linux-x86_64.tar.gz`
+- **Windows**: `ULDictionary-Windows-x86_64.zip` (includes Qt6 DLLs)
+- **macOS**: `ULDictionary-macOS-x86_64.tar.gz` (includes Qt6 frameworks)
+
 ## License
 
 [Add your license here]
